@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
+
+<title>Flappy Face 🎂</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+    touch-action: none;
+    user-select: none;
+}
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    touch-action: none;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* SCORE */
+
+#score {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    color: white;
+
+    font-size: clamp(24px, 6vw, 40px);
+
+    font-weight: bold;
+
+    text-shadow: 3px 3px 5px black;
+
+    z-index: 5;
+
+    pointer-events: none;
+}
+
+
+/* TAP TEXT */
+
+#tapText {
+    position: absolute;
+
+    bottom: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    color: white;
+
+    font-size: 16px;
+
+    text-align: center;
+
+    text-shadow: 2px 2px 4px black;
+
+    z-index: 5;
+
+    pointer-events: none;
+}
+
+
+/* START SCREEN */
+
+#startScreen {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    padding: 20px;
+
+    background: rgba(0,0,0,0.45);
+
+    color: white;
+
+    z-index: 10;
+}
+
+#startScreen h1 {
+    font-size: clamp(38px, 10vw, 70px);
+
+    margin-bottom: 20px;
+
+    text-shadow: 3px 3px 5px black;
+}
+
+#startScreen p {
+    font-size: clamp(17px, 4vw, 25px);
+
+    line-height: 1.5;
+
+    margin-bottom: 25px;
+
+    text-shadow: 2px 2px 4px black;
+}
+
+
+/* BUTTON */
+
+button {
+    border: none;
+
+    border-radius: 15px;
+
+    padding: 15px 35px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    background: #ffcc00;
+
+    color: #111;
+
+    cursor: pointer;
+
+    box-shadow: 0 5px 0 #a47d00;
+}
+
+button:active {
+    transform: translateY(4px);
+
+    box-shadow: 0 1px 0 #a47d00;
+}
+
+
+/* BIRTHDAY SCREEN */
+
+#birthdayScreen {
+    position: absolute;
+    inset: 0;
+
+    display: none;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    padding: 25px;
+
+    background: rgba(0,0,0,0.72);
+
+    color: white;
+
+    z-index: 20;
+}
+
+#birthdayScreen h1 {
+    font-size: clamp(35px, 10vw, 65px);
+
+    margin-bottom: 15px;
+
+    text-shadow: 3px 3px 5px black;
+}
+
+#birthdayScreen h2 {
+    font-size: clamp(25px, 7vw, 45px);
+
+    margin-bottom: 20px;
+}
+
+#birthdayScreen p {
+    max-width: 750px;
+
+    font-size: clamp(17px, 4.5vw, 26px);
+
+    line-height: 1.5;
+
+    margin-bottom: 25px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div id="game">
+
+    <canvas id="canvas"></canvas>
+
+
+    <!-- SCORE -->
+
+    <div id="score">
+        Pole 0 / 10
+    </div>
+
+
+    <!-- TAP MESSAGE -->
+
+    <div id="tapText">
+        TAP THE SCREEN TO FLAP
+    </div>
+
+
+    <!-- START SCREEN -->
+
+    <div id="startScreen">
+
+        <h1 id="startTitle">
+            🐦 FLAPPY FACE
+        </h1>
+
+        <p id="startMessage">
+
+            Tap the screen to fly!<br>
+
+            Complete all 10 poles 🎂
+
+        </p>
+
+        <button id="startButton">
+
+            START GAME
+
+        </button>
+
+    </div>
+
+
+    <!-- BIRTHDAY SCREEN -->
+
+    <div id="birthdayScreen">
+
+        <h1>
+            🎉 YOU DID IT! 🎉
+        </h1>
+
+        <h2>
+            🎂 HAPPY BIRTHDAY! 🎂
+        </h2>
+
+        <p>
+
+            You completed all 10 poles! 🥳
+
+            <br><br>
+
+            Wishing you a day filled with
+            happiness, laughter, love and
+            beautiful memories! 💖
+
+            <br><br>
+
+            Have an amazing birthday! 🎈
+
+        </p>
+
+        <button id="restartButton">
+
+            PLAY AGAIN 🔄
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+
+/* =====================================================
+   CANVAS
+===================================================== */
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+function resizeCanvas() {
+
+    canvas.width =
+        window.innerWidth;
+
+    canvas.height =
+        window.innerHeight;
+}
+
+
+resizeCanvas();
+
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+
+/* =====================================================
+   IMAGES
+===================================================== */
+
+const backgroundImage =
+    new Image();
+
+backgroundImage.src =
+    "background.jpg";
+
+
+const faceImage =
+    new Image();
+
+faceImage.src =
+    "face.png";
+
+
+/* =====================================================
+   YOUR VOICE
+===================================================== */
+
+/*
+   Put flap.mp3 in the same folder
+   as index.html.
+*/
+
+const flapSound =
+    new Audio("flap.mp3");
+
+flapSound.volume = 1.0;
+
+
+/* =====================================================
+   GAME SETTINGS
+===================================================== */
+
+const TOTAL_POLES = 10;
+
+let gameRunning = false;
+
+let gameFinished = false;
+
+let poleNumber = 0;
+
+let poles = [];
+
+
+/* =====================================================
+   BIRD
+===================================================== */
+
+const bird = {
+
+    x: 0,
+
+    y: 0,
+
+    radius: 35,
+
+    velocity: 0,
+
+    gravity: 0.35,
+
+    jump: -7.5
+
+};
+
+
+/* =====================================================
+   POLE SETTINGS
+===================================================== */
+
+const poleWidth = 70;
+
+const poleGap = 220;
+
+const poleDistance = 350;
+
+const poleSpeed = 3;
+
+
+/* =====================================================
+   RESET BIRD
+===================================================== */
+
+function resetBird() {
+
+    bird.x =
+        canvas.width * 0.25;
+
+    bird.y =
+        canvas.height * 0.45;
+
+    bird.velocity = 0;
+}
+
+
+/* =====================================================
+   BACKGROUND
+===================================================== */
+
+function drawBackground() {
+
+    if (
+        !backgroundImage.complete ||
+        backgroundImage.naturalWidth === 0
+    ) {
+
+        ctx.fillStyle =
+            "#70c5ce";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        return;
+    }
+
+
+    const imageRatio =
+        backgroundImage.width /
+        backgroundImage.height;
+
+
+    const screenRatio =
+        canvas.width /
+        canvas.height;
+
+
+    let drawWidth;
+
+    let drawHeight;
+
+
+    /*
+       FIT MODE
+
+       Complete photo remains visible.
+    */
+
+    if (
+        screenRatio > imageRatio
+    ) {
+
+        drawHeight =
+            canvas.height;
+
+        drawWidth =
+            canvas.height *
+            imageRatio;
+
+    } else {
+
+        drawWidth =
+            canvas.width;
+
+        drawHeight =
+            canvas.width /
+            imageRatio;
+    }
+
+
+    const x =
+        (canvas.width -
+         drawWidth) / 2;
+
+
+    const y =
+        (canvas.height -
+         drawHeight) / 2;
+
+
+    ctx.fillStyle =
+        "#000000";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.drawImage(
+
+        backgroundImage,
+
+        x,
+        y,
+
+        drawWidth,
+        drawHeight
+
+    );
+
+
+    ctx.fillStyle =
+        "rgba(0,0,0,0.12)";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+}
+
+
+/* =====================================================
+   DRAW FACE
+===================================================== */
+
+function drawBird() {
+
+    ctx.save();
+
+
+    /*
+       Circular face
+    */
+
+    ctx.beginPath();
+
+    ctx.arc(
+
+        bird.x,
+        bird.y,
+
+        bird.radius,
+
+        0,
+        Math.PI * 2
+
+    );
+
+    ctx.clip();
+
+
+    /*
+       Your face image
+    */
+
+    if (
+        faceImage.complete &&
+        faceImage.naturalWidth > 0
+    ) {
+
+        ctx.drawImage(
+
+            faceImage,
+
+            bird.x -
+            bird.radius,
+
+            bird.y -
+            bird.radius,
+
+            bird.radius * 2,
+
+            bird.radius * 2
+
+        );
+
+    } else {
+
+        ctx.fillStyle =
+            "#FFD700";
+
+        ctx.fillRect(
+
+            bird.x -
+            bird.radius,
+
+            bird.y -
+            bird.radius,
+
+            bird.radius * 2,
+
+            bird.radius * 2
+        );
+    }
+
+
+    ctx.restore();
+
+
+    /*
+       Face border
+    */
+
+    ctx.beginPath();
+
+    ctx.arc(
+
+        bird.x,
+        bird.y,
+
+        bird.radius,
+
+        0,
+        Math.PI * 2
+
+    );
+
+    ctx.lineWidth = 4;
+
+    ctx.strokeStyle =
+        "white";
+
+    ctx.stroke();
+}
+
+
+/* =====================================================
+   CREATE POLE
+===================================================== */
+
+function createPole(x) {
+
+    const topMargin = 70;
+
+    const bottomMargin = 100;
+
+
+    const availableHeight =
+
+        canvas.height -
+        topMargin -
+        bottomMargin -
+        poleGap;
+
+
+    const topHeight =
+
+        topMargin +
+        Math.random() *
+        availableHeight;
+
+
+    return {
+
+        x: x,
+
+        topHeight:
+            topHeight,
+
+        bottomY:
+            topHeight +
+            poleGap,
+
+        counted: false
+    };
+}
+
+
+/* =====================================================
+   CREATE 10 POLES
+===================================================== */
+
+function createPoles() {
+
+    poles = [];
+
+
+    for (
+        let i = 0;
+        i < TOTAL_POLES;
+        i++
+    ) {
+
+        const x =
+
+            canvas.width +
+            450 +
+            i * poleDistance;
+
+
+        poles.push(
+            createPole(x)
+        );
+    }
+}
+
+
+/* =====================================================
+   DRAW POLES
+===================================================== */
+
+function drawPoles() {
+
+    for (
+        const pole of poles
+    ) {
+
+        /*
+           TOP POLE
+        */
+
+        ctx.fillStyle =
+            "#35a900";
+
+        ctx.fillRect(
+
+            pole.x,
+
+            0,
+
+            poleWidth,
+
+            pole.topHeight
+
+        );
+
+
+        /*
+           TOP CAP
+        */
+
+        ctx.fillStyle =
+            "#65d000";
+
+        ctx.fillRect(
+
+            pole.x - 5,
+
+            pole.topHeight - 25,
+
+            poleWidth + 10,
+
+            25
+
+        );
+
+
+        /*
+           BOTTOM POLE
+        */
+
+        ctx.fillStyle =
+            "#35a900";
+
+        ctx.fillRect(
+
+            pole.x,
+
+            pole.bottomY,
+
+            poleWidth,
+
+            canvas.height -
+            pole.bottomY
+
+        );
+
+
+        /*
+           BOTTOM CAP
+        */
+
+        ctx.fillStyle =
+            "#65d000";
+
+        ctx.fillRect(
+
+            pole.x - 5,
+
+            pole.bottomY,
+
+            poleWidth + 10,
+
+            25
+
+        );
+
+
+        /*
+           Outline
+        */
+
+        ctx.strokeStyle =
+            "rgba(0,0,0,0.35)";
+
+        ctx.lineWidth = 2;
+
+
+        ctx.strokeRect(
+
+            pole.x,
+
+            0,
+
+            poleWidth,
+
+            pole.topHeight
+
+        );
+
+
+        ctx.strokeRect(
+
+            pole.x,
+
+            pole.bottomY,
+
+            poleWidth,
+
+            canvas.height -
+            pole.bottomY
+
+        );
+    }
+}
+
+
+/* =====================================================
+   MOVE POLES
+===================================================== */
+
+function movePoles() {
+
+    for (
+        const pole of poles
+    ) {
+
+        pole.x -=
+            poleSpeed;
+
+
+        /*
+           Passed pole
+        */
+
+        if (
+
+            !pole.counted &&
+
+            pole.x +
+            poleWidth <
+            bird.x
+
+        ) {
+
+            pole.counted = true;
+
+            poleNumber++;
+
+            updateScore();
+
+
+            if (
+                poleNumber >=
+                TOTAL_POLES
+            ) {
+
+                finishGame();
+
+                return;
+            }
+        }
+    }
+}
+
+
+/* =====================================================
+   COLLISION
+===================================================== */
+
+function checkCollision() {
+
+    /*
+       Top
+    */
+
+    if (
+        bird.y -
+        bird.radius <= 0
+    ) {
+
+        return true;
+    }
+
+
+    /*
+       Bottom
+    */
+
+    if (
+        bird.y +
+        bird.radius >=
+        canvas.height
+    ) {
+
+        return true;
+    }
+
+
+    /*
+       Poles
+    */
+
+    for (
+        const pole of poles
+    ) {
+
+        const birdLeft =
+            bird.x -
+            bird.radius;
+
+        const birdRight =
+            bird.x +
+            bird.radius;
+
+        const birdTop =
+            bird.y -
+            bird.radius;
+
+        const birdBottom =
+            bird.y +
+            bird.radius;
+
+
+        const poleLeft =
+            pole.x;
+
+        const poleRight =
+            pole.x +
+            poleWidth;
+
+
+        if (
+
+            birdRight >
+            poleLeft &&
+
+            birdLeft <
+            poleRight
+
+        ) {
+
+            /*
+               Top collision
+            */
+
+            if (
+                birdTop <
+                pole.topHeight
+            ) {
+
+                return true;
+            }
+
+
+            /*
+               Bottom collision
+            */
+
+            if (
+                birdBottom >
+                pole.bottomY
+            ) {
+
+                return true;
+            }
+        }
+    }
+
+
+    return false;
+}
+
+
+/* =====================================================
+   UPDATE BIRD
+===================================================== */
+
+function updateBird() {
+
+    bird.velocity +=
+        bird.gravity;
+
+    bird.y +=
+        bird.velocity;
+}
+
+
+/* =====================================================
+   FLAP
+===================================================== */
+
+function flap() {
+
+    if (!gameRunning) {
+
+        return;
+    }
+
+
+    /*
+       Make bird jump
+    */
+
+    bird.velocity =
+        bird.jump;
+
+
+    /*
+       PLAY YOUR VOICE
+    */
+
+    playFlapSound();
+}
+
+
+/* =====================================================
+   YOUR VOICE
+===================================================== */
+
+function playFlapSound() {
+
+    /*
+       Reset the audio position
+       so it starts immediately.
+    */
+
+    flapSound.currentTime = 0;
+
+
+    flapSound.play().catch(
+        function(error) {
+
+            console.log(
+                "Audio error:",
+                error
+            );
+
+        }
+    );
+}
+
+
+/* =====================================================
+   BIRTHDAY VOICE
+===================================================== */
+
+function speakBirthday() {
+
+    /*
+       Birthday message can still
+       use browser voice.
+
+       You can replace this with
+       your own birthday.mp3 later.
+    */
+
+    if (
+        !("speechSynthesis" in window)
+    ) {
+
+        return;
+    }
+
+
+    window.speechSynthesis.cancel();
+
+
+    const voice =
+        new SpeechSynthesisUtterance(
+
+            "Happy Birthday! " +
+            "You completed all ten poles! " +
+            "Have an amazing birthday!"
+
+        );
+
+
+    voice.volume = 1;
+
+    voice.rate = 0.9;
+
+    voice.pitch = 1.2;
+
+
+    window.speechSynthesis.speak(
+        voice
+    );
+}
+
+
+/* =====================================================
+   SCORE
+===================================================== */
+
+function updateScore() {
+
+    document.getElementById(
+        "score"
+    ).textContent =
+
+        "Pole " +
+        poleNumber +
+        " / " +
+        TOTAL_POLES;
+}
+
+
+/* =====================================================
+   START GAME
+===================================================== */
+
+function startGame() {
+
+    /*
+       Stop old birthday voice.
+    */
+
+    if (
+        "speechSynthesis" in window
+    ) {
+
+        window.speechSynthesis.cancel();
+    }
+
+
+    gameRunning = true;
+
+    gameFinished = false;
+
+    poleNumber = 0;
+
+
+    /*
+       Reset game
+    */
+
+    resetBird();
+
+    createPoles();
+
+    updateScore();
+
+
+    /*
+       Hide start screen
+    */
+
+    document.getElementById(
+        "startScreen"
+    ).style.display =
+        "none";
+
+
+    /*
+       Hide birthday screen
+    */
+
+    document.getElementById(
+        "birthdayScreen"
+    ).style.display =
+        "none";
+
+
+    /*
+       Show tap text
+    */
+
+    document.getElementById(
+        "tapText"
+    ).style.display =
+        "block";
+
+
+    /*
+       First jump
+    */
+
+    bird.velocity =
+        bird.jump;
+
+
+    /*
+       Start game
+    */
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+/* =====================================================
+   GAME OVER
+===================================================== */
+
+function gameOver() {
+
+    gameRunning = false;
+
+
+    /*
+       Stop any playing flap sound.
+    */
+
+    flapSound.pause();
+
+    flapSound.currentTime = 0;
+
+
+    /*
+       Stop birthday speech
+    */
+
+    if (
+        "speechSynthesis" in window
+    ) {
+
+        window.speechSynthesis.cancel();
+    }
+
+
+    setTimeout(
+        function() {
+
+            document.getElementById(
+                "startScreen"
+            ).style.display =
+                "flex";
+
+
+            document.getElementById(
+                "startTitle"
+            ).textContent =
+                "💥 TRY AGAIN!";
+
+
+            document.getElementById(
+                "startMessage"
+            ).innerHTML =
+
+                "You reached Pole " +
+
+                poleNumber +
+
+                " / " +
+
+                TOTAL_POLES +
+
+                "<br><br>" +
+
+                "Tap START to try again!";
+
+        },
+        300
+    );
+}
+
+
+/* =====================================================
+   FINISH GAME
+===================================================== */
+
+function finishGame() {
+
+    if (gameFinished) {
+
+        return;
+    }
+
+
+    gameFinished = true;
+
+    gameRunning = false;
+
+
+    /*
+       Stop flap sound
+    */
+
+    flapSound.pause();
+
+    flapSound.currentTime = 0;
+
+
+    document.getElementById(
+        "tapText"
+    ).style.display =
+        "none";
+
+
+    /*
+       Birthday screen
+    */
+
+    setTimeout(
+        function() {
+
+            document.getElementById(
+                "birthdayScreen"
+            ).style.display =
+                "flex";
+
+
+            speakBirthday();
+
+        },
+        500
+    );
+}
+
+
+/* =====================================================
+   GAME LOOP
+===================================================== */
+
+function gameLoop() {
+
+    if (!gameRunning) {
+
+        return;
+    }
+
+
+    /*
+       Background
+    */
+
+    drawBackground();
+
+
+    /*
+       Bird movement
+    */
+
+    updateBird();
+
+
+    /*
+       Pole movement
+    */
+
+    movePoles();
+
+
+    /*
+       Draw poles
+    */
+
+    drawPoles();
+
+
+    /*
+       Draw face
+    */
+
+    drawBird();
+
+
+    /*
+       Collision
+    */
+
+    if (
+        checkCollision()
+    ) {
+
+        gameOver();
+
+        return;
+    }
+
+
+    /*
+       Continue
+    */
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+/* =====================================================
+   START BUTTON
+===================================================== */
+
+document.getElementById(
+    "startButton"
+).addEventListener(
+
+    "click",
+
+    function(event) {
+
+        event.stopPropagation();
+
+        startGame();
+
+    }
+);
+
+
+/* =====================================================
+   RESTART BUTTON
+===================================================== */
+
+document.getElementById(
+    "restartButton"
+).addEventListener(
+
+    "click",
+
+    function(event) {
+
+        event.stopPropagation();
+
+        startGame();
+
+    }
+);
+
+
+/* =====================================================
+   PHONE / MOUSE TAP
+===================================================== */
+
+const game =
+    document.getElementById(
+        "game"
+    );
+
+
+game.addEventListener(
+
+    "pointerdown",
+
+    function(event) {
+
+        /*
+           Don't flap when
+           pressing buttons.
+        */
+
+        if (
+            event.target.tagName ===
+            "BUTTON"
+        ) {
+
+            return;
+        }
+
+
+        event.preventDefault();
+
+
+        if (gameRunning) {
+
+            flap();
+        }
+
+    }
+);
+
+
+/* =====================================================
+   SPACEBAR
+===================================================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    function(event) {
+
+        if (
+            event.code ===
+            "Space"
+        ) {
+
+            event.preventDefault();
+
+
+            if (gameRunning) {
+
+                flap();
+            }
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   PREVENT PHONE SCROLL
+===================================================== */
+
+document.addEventListener(
+
+    "touchmove",
+
+    function(event) {
+
+        event.preventDefault();
+
+    },
+
+    {
+        passive: false
+    }
+
+);
+
+
+/* =====================================================
+   INITIAL SETUP
+===================================================== */
+
+resetBird();
+
+updateScore();
+
+</script>
+
+</body>
+
+</html>
